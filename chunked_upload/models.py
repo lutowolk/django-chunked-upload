@@ -63,6 +63,9 @@ class BaseChunkedUpload(models.Model):
             self.filename, self.upload_id, self.offset, self.status)
 
     def append_chunk(self, chunk, chunk_size=None, save=True):
+        if self.file.closed:
+            self.file._get_file()
+        
         self.file.close()
         self.file.open(mode='ab')  # mode = append+binary
         # We can use .read() safely because chunk is already in memory
@@ -79,6 +82,9 @@ class BaseChunkedUpload(models.Model):
         self.file.close()  # Flush
 
     def get_uploaded_file(self):
+        if self.file.closed:
+            self.file._get_file()
+            
         self.file.close()
         self.file.open(mode='rb')  # mode = read+binary
         return UploadedFile(file=self.file, name=self.filename,
